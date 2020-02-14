@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
   s.homepage     = package['homepage']
   s.platform     = :ios, "9.0"
 
-  s.source       = { :git => "https://github.com/veddermatic/react-native-multipicker.git", :tag => "v#{s.version}" }
+  s.source       = { :git => "https://github.com/nlively/react-native-multipicker.git", :branch => "master" }
 
   s.source_files  = "RNMultiPicker/**/*.{h,m}"
 
