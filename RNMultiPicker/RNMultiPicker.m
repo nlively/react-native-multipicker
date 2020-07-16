@@ -16,19 +16,24 @@
 
 @implementation RNMultiPicker
 {
-  NSArray *_selectedIndexes;
-  NSArray *_componentData;
-  int _use_animation;
+    NSArray *_selectedIndexes;
+    NSArray *_componentData;
+    int _use_animation;
 }
 
 #pragma mark - init method
 - (id)init
 {
-  if (self = [super initWithFrame:CGRectZero]) {
-    self.delegate = self;
-    _use_animation = 0;
-  }
-  return self;
+    if (self = [super initWithFrame:CGRectZero]) {
+        self.delegate = self;
+        if (@available(iOS 13.0, *)) {
+            self.overrideUserInterfaceStyle = UIUserInterfaceStyleLight;
+        } else {
+            // Fallback on earlier versions
+        }
+        _use_animation = 0;
+    }
+    return self;
 }
 
 
@@ -36,32 +41,32 @@
 
 - (void)setSelectedIndexes:(NSArray *)selectedIndexes
 {
-
-  if (![_selectedIndexes isEqualToArray:selectedIndexes]) {
-    BOOL animate = (_use_animation != 0);
-
-    _selectedIndexes = [selectedIndexes copy];
-    // TODO: see if this loop to check if we should bother updating is even
-    // needed. React probably only updates us if we *do* need to update.
-    for (NSInteger i = 0; i < self.numberOfComponents; i++) {
-      NSInteger currentSelected = [self selectedRowInComponent:i];
-      NSInteger checkVal = [[_selectedIndexes objectAtIndex:i] integerValue];
-      if (i < _selectedIndexes.count && currentSelected != checkVal ) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-          [self selectRow:checkVal inComponent:i animated:animate];
-        });
-      }
+    
+    if (![_selectedIndexes isEqualToArray:selectedIndexes]) {
+        BOOL animate = (_use_animation != 0);
+        
+        _selectedIndexes = [selectedIndexes copy];
+        // TODO: see if this loop to check if we should bother updating is even
+        // needed. React probably only updates us if we *do* need to update.
+        for (NSInteger i = 0; i < self.numberOfComponents; i++) {
+            NSInteger currentSelected = [self selectedRowInComponent:i];
+            NSInteger checkVal = [[_selectedIndexes objectAtIndex:i] integerValue];
+            if (i < _selectedIndexes.count && currentSelected != checkVal ) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self selectRow:checkVal inComponent:i animated:animate];
+                });
+            }
+        }
+        _use_animation = 1;
     }
-    _use_animation = 1;
-  }
 }
 
 - (void)setComponentData:(NSArray *)componentData
 {
-  if (![_componentData isEqualToArray:componentData]) {
-    _componentData = [componentData copy];
-    [self setNeedsLayout];
-  }
+    if (![_componentData isEqualToArray:componentData]) {
+        _componentData = [componentData copy];
+        [self setNeedsLayout];
+    }
 }
 
 #pragma mark - Look, I'm helping!
@@ -71,7 +76,7 @@
  */
 - (NSArray *)dataForComponent:(NSInteger)component
 {
-  return  [_componentData objectAtIndex:component];
+    return  [_componentData objectAtIndex:component];
 }
 
 /**
@@ -79,7 +84,7 @@
  */
 - (NSDictionary *)dataForRow:(NSInteger)row inComponent:(NSInteger)component
 {
-  return [[self dataForComponent:component] objectAtIndex:row];
+    return [[self dataForComponent:component] objectAtIndex:row];
 }
 
 /**
@@ -87,7 +92,7 @@
  */
 - (id)valueForRow:(NSInteger)row inComponent:(NSInteger)component
 {
-  return [self dataForRow:row inComponent:component][@"value"];
+    return [self dataForRow:row inComponent:component][@"value"];
 }
 
 /**
@@ -95,40 +100,40 @@
  */
 - (NSString *)labelForRow:(NSInteger)row inComponent:(NSInteger)component
 {
-  return [self dataForRow:row inComponent:component][@"label"];
+    return [self dataForRow:row inComponent:component][@"label"];
 }
 
 #pragma mark - UIPickerViewDataSource
 
 - (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component
 {
-  return [[_componentData objectAtIndex:component] count];
+    return [[_componentData objectAtIndex:component] count];
 }
 
 - (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView
 {
-  return [_componentData count];
+    return [_componentData count];
 }
 
 #pragma mark - UIPickerDelegate
 
 - (NSString *)pickerView:(UIPickerView *)pickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component
 {
-  return [self labelForRow:row inComponent:component];
+    return [self labelForRow:row inComponent:component];
 }
 
 - (void)pickerView:(UIPickerView *)pickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component
 {
-  if (!self.onChange) {
-    return;
-  }
-
-  self.onChange(@{
-    @"target": self.reactTag,
-    @"newIndex": @(row),
-    @"component": @(component),
-    @"newValue": [self valueForRow:row inComponent:component]
-  });
+    if (!self.onChange) {
+        return;
+    }
+    
+    self.onChange(@{
+        @"target": self.reactTag,
+        @"newIndex": @(row),
+        @"component": @(component),
+        @"newValue": [self valueForRow:row inComponent:component]
+                  });
 }
 
 @end
